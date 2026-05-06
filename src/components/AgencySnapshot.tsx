@@ -181,63 +181,57 @@ function Slide({
   // Outside, it's grey. A short transition zone at the boundaries makes
   // the swap snappy but smooth — the slide that the user's focus shifts
   // toward goes black exactly as it crosses the activation threshold.
+  //
+  // Offsets MUST stay in [0, 1] AND be strictly monotonic, otherwise
+  // framer-motion's underlying Element.animate() throws. Slide 0 and 2
+  // straddle the edges, so we clamp + nudge with a tiny epsilon to keep
+  // the array valid.
   const center = index / 2;
-  const halfBand = 0.25; // half of 50% band
+  const halfBand = 0.25;
   const transition = 0.06;
-  const activeStart = Math.max(-1, center - halfBand);
-  const activeEnd = Math.min(2, center + halfBand);
+  const eps = 0.0001;
+  const rawStart = center - halfBand;
+  const rawEnd = center + halfBand;
 
-  const scale = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    [0.96, 1, 1, 0.96]
-  );
+  const o0 = Math.max(0, Math.min(1, rawStart - transition));
+  const o1 = Math.max(o0 + eps, Math.min(1 - 2 * eps, rawStart));
+  const o2 = Math.max(o1 + eps, Math.min(1 - eps, rawEnd));
+  const o3 = Math.max(o2 + eps, Math.min(1, rawEnd + transition));
+  const stops: [number, number, number, number] = [o0, o1, o2, o3];
 
-  const headlineColor = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    ["#9a9a9a", "#000000", "#000000", "#9a9a9a"]
-  );
-  const numeralColor = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    [
-      "rgba(38,39,47,0.10)",
-      "rgba(0,0,0,0.55)",
-      "rgba(0,0,0,0.55)",
-      "rgba(38,39,47,0.10)",
-    ]
-  );
-  const detailColor = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    ["#a8a8a8", "#26272f", "#26272f", "#a8a8a8"]
-  );
-  const labelColor = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    ["#a8a8a8", "#000000", "#000000", "#a8a8a8"]
-  );
+  const scale = useTransform(progress, stops, [0.96, 1, 1, 0.96]);
+
+  const headlineColor = useTransform(progress, stops, [
+    "#9a9a9a",
+    "#000000",
+    "#000000",
+    "#9a9a9a",
+  ]);
+  const numeralColor = useTransform(progress, stops, [
+    "rgba(38,39,47,0.10)",
+    "rgba(0,0,0,0.55)",
+    "rgba(0,0,0,0.55)",
+    "rgba(38,39,47,0.10)",
+  ]);
+  const detailColor = useTransform(progress, stops, [
+    "#a8a8a8",
+    "#26272f",
+    "#26272f",
+    "#a8a8a8",
+  ]);
+  const labelColor = useTransform(progress, stops, [
+    "#a8a8a8",
+    "#000000",
+    "#000000",
+    "#a8a8a8",
+  ]);
 
   // Background image — sharper + more visible (lower white overlay) when
-  // the slide is in focus, blurred + bleached when inactive. Synced to the
-  // same activation window as the text colors.
-  const bgBlurValue = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    [18, 0, 0, 18]
-  );
+  // the slide is in focus, blurred + bleached when inactive.
+  const bgBlurValue = useTransform(progress, stops, [18, 0, 0, 18]);
   const bgFilter = useTransform(bgBlurValue, (v) => `blur(${v}px)`);
-  const bgScale = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    [1.06, 1, 1, 1.06]
-  );
-  const overlayOpacity = useTransform(
-    progress,
-    [activeStart - transition, activeStart, activeEnd, activeEnd + transition],
-    [0.92, 0.62, 0.62, 0.92]
-  );
+  const bgScale = useTransform(progress, stops, [1.06, 1, 1, 1.06]);
+  const overlayOpacity = useTransform(progress, stops, [0.92, 0.62, 0.62, 0.92]);
 
   const base = import.meta.env.BASE_URL;
   const bgUrl = `${base}${SLIDE_BG[index] ?? SLIDE_BG[0]}`;
