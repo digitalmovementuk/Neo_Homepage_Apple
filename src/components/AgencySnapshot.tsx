@@ -175,63 +175,84 @@ function Slide({
   index: number;
   progress: MotionValue<number>;
 }) {
-  // Slide 0 center: progress=0; Slide 1: 0.5; Slide 2: 1.
-  // Each slide owns a 50%-wide "active band" centred on its progress
-  // position. Within that band the slide is BLACK (it's the user's focus).
-  // Outside, it's grey. A short transition zone at the boundaries makes
-  // the swap snappy but smooth — the slide that the user's focus shifts
-  // toward goes black exactly as it crosses the activation threshold.
+  // Slide handoff sync — the moment slide A starts blurring out, slide B
+  // starts sharpening in, both crossing the same handoff window.
   //
-  // Offsets MUST stay in [0, 1] AND be strictly monotonic, otherwise
-  // framer-motion's underlying Element.animate() throws. Slide 0 and 2
-  // straddle the edges, so we clamp + nudge with a tiny epsilon to keep
-  // the array valid.
-  const center = index / 2;
-  const halfBand = 0.25;
-  const transition = 0.06;
+  // Focus boundaries between slides sit at progress 0.25 (slide 0 → 1)
+  // and 0.75 (slide 1 → 2). The transition window is centred on each
+  // boundary (±delta), so during the handoff range BOTH neighbouring
+  // slides animate simultaneously: outgoing fades to grey + blurs +
+  // overlay heavies, incoming snaps to black + sharpens + overlay lifts.
+  //
+  // Offsets stay in [0, 1] and strictly monotonic.
+  const delta = 0.035;
   const eps = 0.0001;
-  const rawStart = center - halfBand;
-  const rawEnd = center + halfBand;
+  const cut1 = 0.25;
+  const cut2 = 0.75;
 
-  const o0 = Math.max(0, Math.min(1, rawStart - transition));
-  const o1 = Math.max(o0 + eps, Math.min(1 - 2 * eps, rawStart));
-  const o2 = Math.max(o1 + eps, Math.min(1 - eps, rawEnd));
-  const o3 = Math.max(o2 + eps, Math.min(1, rawEnd + transition));
-  const stops: [number, number, number, number] = [o0, o1, o2, o3];
+  type Stops = [number, number, number, number];
+  type Quad<T> = [T, T, T, T];
 
-  const scale = useTransform(progress, stops, [0.96, 1, 1, 0.96]);
+  let stops: Stops;
+  let pattern: "first" | "middle" | "last";
 
-  const headlineColor = useTransform(progress, stops, [
-    "#9a9a9a",
-    "#000000",
-    "#000000",
-    "#9a9a9a",
-  ]);
-  const numeralColor = useTransform(progress, stops, [
-    "rgba(38,39,47,0.10)",
-    "rgba(0,0,0,0.55)",
-    "rgba(0,0,0,0.55)",
-    "rgba(38,39,47,0.10)",
-  ]);
-  const detailColor = useTransform(progress, stops, [
-    "#a8a8a8",
-    "#26272f",
-    "#26272f",
-    "#a8a8a8",
-  ]);
-  const labelColor = useTransform(progress, stops, [
-    "#a8a8a8",
-    "#000000",
-    "#000000",
-    "#a8a8a8",
-  ]);
+  if (index === 0) {
+    // First slide — sits active from progress 0, hands off to slide 1
+    // at the first cut.
+    stops = [0, cut1 - delta, cut1 + delta, 1] as Stops;
+    pattern = "first";
+  } else if (index === 1) {
+    // Middle slide — handoff in at cut1, handoff out at cut2.
+    stops = [
+      cut1 - delta,
+      cut1 + delta,
+      cut2 - delta,
+      cut2 + delta,
+    ] as Stops;
+    pattern = "middle";
+  } else {
+    // Last slide — handoff in at cut2, sits active until progress 1.
+    stops = [0, cut2 - delta, cut2 + delta, 1] as Stops;
+    pattern = "last";
+  }
 
-  // Background image — sharper + more visible (lower white overlay) when
-  // the slide is in focus, blurred + bleached when inactive.
-  const bgBlurValue = useTransform(progress, stops, [18, 0, 0, 18]);
-  const bgFilter = useTransform(bgBlurValue, (v) => `blur(${v}px)`);
-  const bgScale = useTransform(progress, stops, [1.06, 1, 1, 1.06]);
-  const overlayOpacity = useTransform(progress, stops, [0.92, 0.62, 0.62, 0.92]);
+  // Guard against equal stops (defensive — shouldn't happen with current
+  // delta but keeps framer-motion's Element.animate() happy).
+  for (let i = 1; i < 4; i++) {
+    if (stops[i] <= stops[i - 1]) stops[i] = stops[i - 1] + eps;
+  }
+
+  /** Returns a 4-stop value array using the slide's handoff pattern. */
+  const v = <T,>(active: T, inactive: T): Quad<T> => {
+    if (pattern === "first") {
+      // [active@0, active@cut-δ, inactive@cut+δ, inactive@1]
+      return [active, active, inactive, inactive];
+    }
+    if (pattern === "last") {
+      // [inactive@0, inactive@cut-δ, active@cut+δ, active@1]
+      return [inactive, inactive, active, active];
+    }
+    // middle: [inactive, active, active, inactive]
+    return [inactive, active, active, inactive];
+  };
+
+  const scale = useTransform(progress, stops, v(1, 0.96));
+
+  const headlineColor = useTransform(progress, stops, v("#000000", "#9a9a9a"));
+  const numeralColor = useTransform(
+    progress,
+    stops,
+    v("rgba(0,0,0,0.55)", "rgba(38,39,47,0.10)")
+  );
+  const detailColor = useTransform(progress, stops, v("#26272f", "#a8a8a8"));
+  const labelColor = useTransform(progress, stops, v("#000000", "#a8a8a8"));
+
+  // Background image — sharp + more visible when active, blurred +
+  // bleached when inactive. Same handoff window as the text.
+  const bgBlurValue = useTransform(progress, stops, v(0, 18));
+  const bgFilter = useTransform(bgBlurValue, (val) => `blur(${val}px)`);
+  const bgScale = useTransform(progress, stops, v(1, 1.06));
+  const overlayOpacity = useTransform(progress, stops, v(0.55, 0.92));
 
   const base = import.meta.env.BASE_URL;
   const bgUrl = `${base}${SLIDE_BG[index] ?? SLIDE_BG[0]}`;

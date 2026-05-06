@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Pause, Play } from "lucide-react";
 import { useT } from "../lib/i18n";
 
@@ -20,17 +20,30 @@ import { useT } from "../lib/i18n";
  */
 export function Hero() {
   const t = useT();
-  const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
 
+  // iOS Safari is strict about autoplay: muted+playsInline+autoplay should
+  // work, but React occasionally renders <video muted> as the property
+  // without the *attribute* — and Safari only honours the attribute for
+  // autoplay. Set both via ref BEFORE play() to make it robust.
+  // We also retry play() on `canplay` so a slow mobile network doesn't
+  // permanently lose the autoplay window.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
     v.defaultMuted = true;
-    v.play().catch(() => {});
+    v.setAttribute("muted", ""); // belt-and-braces for Safari
+    const tryPlay = () => v.play().catch(() => {});
+    tryPlay();
+    v.addEventListener("canplay", tryPlay, { once: true });
+    v.addEventListener("loadedmetadata", tryPlay, { once: true });
+    return () => {
+      v.removeEventListener("canplay", tryPlay);
+      v.removeEventListener("loadedmetadata", tryPlay);
+    };
   }, []);
 
   const togglePlay = () => {
@@ -53,21 +66,28 @@ export function Hero() {
       className="surface-dark relative isolate overflow-hidden w-screen min-h-[100svh] h-[100dvh]"
     >
       <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-        {!reduce && (
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            // @ts-expect-error fetchpriority is missing from React types
-            fetchpriority="high"
-            className="absolute inset-0 h-full w-full object-cover scale-105"
-            src={`${import.meta.env.BASE_URL}video/hero.mp4`}
-            {...({ "webkit-playsinline": "true", "x5-playsinline": "true" } as Record<string, string>)}
-          />
-        )}
+        {/* Video is always rendered — including under prefers-reduced-motion.
+            A muted, looping background clip is content, not motion that
+            triggers vestibular issues. preload="auto" ensures the browser
+            loads enough data to actually start playing on slower mobile
+            networks instead of waiting for a user gesture. */}
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          poster={`${import.meta.env.BASE_URL}brand/og-cover.jpg`}
+          // @ts-expect-error fetchpriority is missing from React types
+          fetchpriority="high"
+          className="absolute inset-0 h-full w-full object-cover scale-105"
+          src={`${import.meta.env.BASE_URL}video/hero.mp4#t=0.1`}
+          {...({
+            "webkit-playsinline": "true",
+            "x5-playsinline": "true",
+          } as Record<string, string>)}
+        />
 
         {/* Top fade — improves nav legibility */}
         <div
