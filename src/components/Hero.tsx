@@ -24,23 +24,44 @@ export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
 
-  // iOS Safari is strict about autoplay: muted+playsInline+autoplay should
-  // work, but React occasionally renders <video muted> as the property
-  // without the *attribute* — and Safari only honours the attribute for
-  // autoplay. Set both via ref BEFORE play() to make it robust.
-  // We also retry play() on `canplay` so a slow mobile network doesn't
-  // permanently lose the autoplay window.
+  // iOS Safari is strict about autoplay. Defenses, in order:
+  //   1. Force `muted` as both property AND attribute (React only sets the
+  //      property; Safari needs the attribute for autoplay to fire).
+  //   2. Try play() immediately, then again on canplay / loadedmetadata
+  //      so a slow 4G mobile network doesn't lose the autoplay window.
+  //   3. If autoplay is still blocked (Low Power Mode, strict private
+  //      browsing), attach a one-shot user-gesture listener on the
+  //      document so the very first touch starts the video silently.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
     v.defaultMuted = true;
-    v.setAttribute("muted", ""); // belt-and-braces for Safari
+    v.setAttribute("muted", "");
+
     const tryPlay = () => v.play().catch(() => {});
     tryPlay();
+
+    const onFirstGesture = () => {
+      tryPlay();
+      document.removeEventListener("touchstart", onFirstGesture);
+      document.removeEventListener("pointerdown", onFirstGesture);
+    };
+    document.addEventListener("touchstart", onFirstGesture, {
+      once: true,
+      passive: true,
+    });
+    document.addEventListener("pointerdown", onFirstGesture, {
+      once: true,
+      passive: true,
+    });
+
     v.addEventListener("canplay", tryPlay, { once: true });
     v.addEventListener("loadedmetadata", tryPlay, { once: true });
+
     return () => {
+      document.removeEventListener("touchstart", onFirstGesture);
+      document.removeEventListener("pointerdown", onFirstGesture);
       v.removeEventListener("canplay", tryPlay);
       v.removeEventListener("loadedmetadata", tryPlay);
     };

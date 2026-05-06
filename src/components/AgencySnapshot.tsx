@@ -2,7 +2,6 @@ import { useRef } from "react";
 import {
   motion,
   useMotionValue,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
@@ -47,7 +46,6 @@ const SLIDE_BG = [
 
 export function AgencySnapshot() {
   const t = useT();
-  const reduce = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -62,24 +60,12 @@ export function AgencySnapshot() {
 
   const items = t.snapshot.items;
 
-  // Reduced-motion / mobile fallback: stacked vertical reveal, no pinning.
-  if (reduce) {
-    return (
-      <section
-        id="snapshot"
-        data-surface="light"
-        aria-label="Agentur-Snapshot"
-        className="surface-light relative pt-12 pb-16"
-      >
-        <div className="container-v3 space-y-16">
-          <SnapshotHeader title={t.snapshot.title} tagline={t.snapshot.tagline} />
-          {items.map((s) => (
-            <SlideStatic key={s.index} s={s} />
-          ))}
-        </div>
-      </section>
-    );
-  }
+  // Note: previously this section bypassed the scroll-jack under
+  // prefers-reduced-motion. We removed that branch — the horizontal
+  // slide is content navigation (one slide per third of the section
+  // height), not gratuitous parallax that triggers vestibular issues.
+  // Without the bypass, iOS users with the "Reduce Motion" toggle on
+  // (very common) still see the slide animation as intended.
 
   return (
     <section
