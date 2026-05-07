@@ -84,7 +84,7 @@ export function Hero() {
       id="top"
       ref={sectionRef}
       data-surface="dark"
-      className="surface-dark relative isolate overflow-hidden w-screen min-h-[100svh] h-[100dvh]"
+      className="surface-dark relative isolate overflow-hidden w-screen min-h-[100svh] h-[100svh]"
     >
       <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
         {/* Video is always rendered — including under prefers-reduced-motion.

@@ -3,6 +3,7 @@ import {
   motion,
   useMotionValue,
   useScroll,
+  useSpring,
   useTransform,
   type MotionValue,
 } from "framer-motion";
@@ -48,9 +49,20 @@ export function AgencySnapshot() {
   const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
 
-  const { scrollYProgress } = useScroll({
+  const { scrollYProgress: rawProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
+  });
+
+  // Wrap raw scroll progress in a spring so the horizontal slide and
+  // colour/blur transitions have natural inertia instead of being
+  // 1:1 locked to the user's scroll position. Eliminates the mechanical
+  // "jumps to whatever pixel I've scrolled" feel.
+  const scrollYProgress = useSpring(rawProgress, {
+    stiffness: 140,
+    damping: 28,
+    mass: 0.8,
+    restDelta: 0.0005,
   });
 
   // Track translates from 0 → -200vw across the full scroll-pinned range,
@@ -78,7 +90,16 @@ export function AgencySnapshot() {
       {/* Sticky pin — bleibt 100vh hoch im Viewport, während die Section
           ihre 300vh durchgescrollt wird. Innerhalb davon der horizontale
           Slider. */}
-      <div className="sticky top-0 h-[100svh] md:h-screen overflow-hidden flex flex-col">
+      <div
+        className="sticky top-0 h-[100svh] md:h-screen overflow-hidden flex flex-col"
+        style={{
+          // GPU layer hint — keeps the pinned viewport on its own
+          // composite layer so backdrop-filters and scroll-driven
+          // transforms don't repaint the page beneath.
+          transform: "translate3d(0,0,0)",
+          willChange: "transform",
+        }}
+      >
         {/* Section header — sitzt oben in der pinned-Card, klein gehalten */}
         <div className="container-v3 pt-[max(env(safe-area-inset-top),5rem)] sm:pt-24 md:pt-28 shrink-0">
           <SnapshotHeader

@@ -157,17 +157,23 @@
 
   /* Sticky nav backdrops — translucent + blur. Two flavours that swap by
      scroll position so the bar is always legible against whatever is
-     behind it. */
-  .nav-glass-light {
-    background: rgba(251,251,253,0.72);
+     behind it.
+     `transform: translate3d(0,0,0)` promotes the bar to its own GPU layer
+     so the backdrop-filter recomposite when the surface flips at section
+     boundaries doesn't flicker into the page paint. */
+  .nav-glass-light,
+  .nav-glass-dark {
     backdrop-filter: saturate(180%) blur(18px);
     -webkit-backdrop-filter: saturate(180%) blur(18px);
+    transform: translate3d(0, 0, 0);
+    will-change: background-color, border-color;
+  }
+  .nav-glass-light {
+    background: rgba(251,251,253,0.72);
     border-bottom: 1px solid rgba(27,14,46,0.06);
   }
   .nav-glass-dark {
     background: rgba(27,14,46,0.52);
-    backdrop-filter: saturate(180%) blur(18px);
-    -webkit-backdrop-filter: saturate(180%) blur(18px);
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
 

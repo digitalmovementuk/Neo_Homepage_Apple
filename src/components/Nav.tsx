@@ -25,8 +25,10 @@ export function Nav() {
 
   useEffect(() => {
     const NAV_BAND = 80;
+    let frame = 0;
 
-    const onScroll = () => {
+    const compute = () => {
+      frame = 0;
       setScrolled(window.scrollY > 12);
 
       const sections = document.querySelectorAll<HTMLElement>("[data-surface]");
@@ -47,9 +49,20 @@ export function Nav() {
       }
     };
 
-    onScroll();
+    // Coalesce scroll events into a single rAF tick so we don't trigger
+    // a relayout/repaint per scroll event — was causing the bar to flicker
+    // at section boundaries on iOS where wheel/scroll fires very fast.
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(compute);
+    };
+
+    compute();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => {
@@ -77,7 +90,7 @@ export function Nav() {
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 transition-colors duration-300 ${
+        className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           scrolled
             ? onDark
               ? "nav-glass-dark"
