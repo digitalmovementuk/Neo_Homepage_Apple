@@ -153,8 +153,8 @@ function BarChartVisual({ inView, isEN }: { inView: boolean; isEN: boolean }) {
         {bars.map((b) => {
           const heightPct = (b.value / maxValue) * 100;
           return (
-            <div key={b.label} className="flex-1 flex flex-col items-center gap-3">
-              <div className="relative w-full flex items-end" style={{ height: "100%" }}>
+            <div key={b.label} className="flex-1 flex h-full flex-col items-center gap-3">
+              <div className="relative w-full flex flex-1 items-end">
                 <motion.div
                   initial={{ height: "0%" }}
                   animate={inView ? { height: `${heightPct}%` } : { height: "0%" }}
@@ -164,14 +164,15 @@ function BarChartVisual({ inView, isEN }: { inView: boolean; isEN: boolean }) {
                     ease: [0.22, 1, 0.36, 1],
                   }}
                   className={`w-full rounded-t-[12px] ${
-                    b.mute ? "bg-ink/12" : ""
+                    b.mute ? "bg-ink/[0.18]" : ""
                   }`}
                   style={
                     b.mute
-                      ? undefined
+                      ? { minHeight: "16px" }
                       : {
                           background:
                             "linear-gradient(180deg, #EC178D 0%, #9A2FC6 100%)",
+                          minHeight: "16px",
                         }
                   }
                 />

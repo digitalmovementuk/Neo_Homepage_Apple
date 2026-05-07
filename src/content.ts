@@ -136,13 +136,9 @@ export const processSteps = [
 ];
 
 /**
- * Case Studies — Platzhalter aus dem DM UK Template.
- * TODO: ersetzen mit echten NEO-Projekten:
- *   1. Azura Living Bali (Premium-Wellness)
- *   2. Address Bali (Premium-Immobilien)
- *   3. Cunos (Vermögensberatung)
- *   4. CX (Customer Experience)
- *   5. (+1 weiteres Projekt)
+ * Case Studies. English remains the fallback for the language switcher;
+ * German copy is exported separately so the default German page does not
+ * mix languages in the customer-project section.
  */
 export type CaseStudy = {
   slug: string;
@@ -246,6 +242,99 @@ export const caseStudies: CaseStudy[] = [
       { value: "18x", label: "Organic traffic" },
       { value: "800+", label: "Ranking keywords" },
       { value: "12", label: "Demos / week" },
+    ],
+    video: "video/cases/digital.mp4",
+    accent: "pink",
+  },
+];
+
+export const caseStudiesDe: CaseStudy[] = [
+  {
+    slug: "cunos",
+    client: "Cunos",
+    industry: "Finanzberatung",
+    location: "London",
+    services: ["SEO", "Content", "Webdesign"],
+    timeline: "5 Monate",
+    headline: "5x mehr Beratungen über Google",
+    body:
+      "Die Marke hatte klare Expertise, aber zu wenig Sichtbarkeit. Wir bauten Themenautorität rund um Pension Drawdown und Erbschaftsteuer auf und gaben der Website eine Architektur, die Vertrauen schneller erklärt.",
+    metrics: [
+      { value: "5x", label: "Beratungen" },
+      { value: "7x", label: "Organischer Traffic" },
+      { value: "#1", label: "12 Ziel-Keywords" },
+    ],
+    video: "video/cases/finance-skyline.mp4",
+    accent: "violet",
+  },
+  {
+    slug: "cheshire-conservatory-roofs",
+    client: "Cheshire Conservatory Roofs",
+    industry: "Dach & Hausbau",
+    location: "Cheshire",
+    services: ["Local SEO", "Google Ads"],
+    timeline: "3 Monate",
+    headline: "8x mehr gebuchte Aufträge pro Woche",
+    body:
+      "Aus einer einfachen Broschüren-Seite wurde ein Lead-System. Angebotsformular, Google Business Profile und eine enge Performance-Max-Kampagne füllten den Kalender innerhalb eines Quartals.",
+    metrics: [
+      { value: "8x", label: "Gebuchte Jobs" },
+      { value: "£42", label: "Kosten pro Lead" },
+      { value: "9/10", label: "Quote zu Auftrag" },
+    ],
+    video: "video/cases/roofing.mp4",
+    accent: "orange",
+  },
+  {
+    slug: "fantastic-finish",
+    client: "Fantastic Finish",
+    industry: "Gewerbereinigung",
+    location: "Manchester",
+    services: ["SEO", "Webdesign", "Google Ads"],
+    timeline: "4 Monate",
+    headline: "13x mehr Anfragen pro Monat",
+    body:
+      "Starke Bewertungen, aber kaum Google-Präsenz. Wir bauten die Website neu, ordneten die Service-Struktur und fokussierten Paid Search auf kaufbereite gewerbliche Suchbegriffe.",
+    metrics: [
+      { value: "13x", label: "Mehr Leads" },
+      { value: "60", label: "Tage bis Seite 1" },
+      { value: "8x", label: "ROAS" },
+    ],
+    video: "video/cases/cleaning.mp4",
+    accent: "pink",
+  },
+  {
+    slug: "stride-and-co",
+    client: "Stride & Co.",
+    industry: "Logistik",
+    location: "Birmingham",
+    services: ["SEO", "Webdesign"],
+    timeline: "6 Monate",
+    headline: "11x mehr gebuchte Lieferungen",
+    body:
+      "Gleicher Traffic, deutlich mehr Abschlüsse. Wir schrieben jede Service-Seite neu, verbesserten Core Web Vitals und reduzierten den Anfrageprozess auf eine klare Hauptaktion.",
+    metrics: [
+      { value: "11x", label: "Conversions" },
+      { value: "1,5x", label: "Warenkorbwert" },
+      { value: "1,8s", label: "LCP" },
+    ],
+    video: "video/cases/logistics.mp4",
+    accent: "violet",
+  },
+  {
+    slug: "loomframe",
+    client: "Loomframe",
+    industry: "B2B-Software",
+    location: "Bristol",
+    services: ["SEO", "Content", "Conversion"],
+    timeline: "8 Monate",
+    headline: "18x mehr organischer Traffic",
+    body:
+      "Gemeinsam mit den Gründern entstand ein Content-System von null. Heute rankt die Website für 800+ kommerzielle Suchanfragen und bucht Demo-Termine ohne laufende Paid-Spend-Abhängigkeit.",
+    metrics: [
+      { value: "18x", label: "Organischer Traffic" },
+      { value: "800+", label: "Ranking-Keywords" },
+      { value: "12", label: "Demos pro Woche" },
     ],
     video: "video/cases/digital.mp4",
     accent: "pink",

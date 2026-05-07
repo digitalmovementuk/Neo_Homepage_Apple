@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
+import { ArrowUpRight } from "lucide-react";
 import { services as servicesFallback } from "../content";
 import { Reveal } from "../lib/Reveal";
 import { useT, useLang } from "../lib/i18n";
+
+const SERVICE_ROUTE_MAP: Record<string, string> = {
+  seo: "/services/seo",
+  "google-ads": "/services/google-ads",
+  social: "/services/social-media",
+  websites: "/services/websites",
+};
 
 const AUTOPLAY_MS = 8000;
 
@@ -156,6 +165,8 @@ export function ServicesCarousel() {
             service={s}
             index={i}
             total={services.length}
+            route={SERVICE_ROUTE_MAP[s.key]}
+            learnMoreLabel={isEN ? "Learn more" : "Mehr erfahren"}
           />
         ))}
       </div>
@@ -194,11 +205,15 @@ const ServiceSlide = ({
   service,
   index,
   total,
+  route,
+  learnMoreLabel,
 }: {
   ref: (el: HTMLElement | null) => void;
   service: ServiceItem;
   index: number;
   total: number;
+  route?: string;
+  learnMoreLabel: string;
 }) => {
   return (
     <article
@@ -231,22 +246,32 @@ const ServiceSlide = ({
           {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
         </span>
 
-        {/* Two-line overlay — eyebrow + headline, bottom-left */}
-        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 md:p-10 lg:p-12">
-          <p className="text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.18em] text-white/85">
-            {service.title}
-          </p>
-          <h3
-            className="mt-2 max-w-[16ch] balance text-white"
-            style={{
-              fontSize: "clamp(28px, 3.4vw, 48px)",
-              lineHeight: "1.04",
-              letterSpacing: "-0.034em",
-              fontWeight: 600,
-            }}
-          >
-            {service.promise}
-          </h3>
+        {/* Two-line overlay + Learn-more pill, bottom-left */}
+        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col gap-5 sm:gap-6">
+          <div>
+            <p className="text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.18em] text-white/85">
+              {service.title}
+            </p>
+            <h3
+              className="mt-2 max-w-[16ch] balance text-white"
+              style={{
+                fontSize: "clamp(28px, 3.4vw, 48px)",
+                lineHeight: "1.04",
+                letterSpacing: "-0.034em",
+                fontWeight: 600,
+              }}
+            >
+              {service.promise}
+            </h3>
+          </div>
+          {route && (
+            <Link
+              to={route}
+              className="self-start inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white text-[12.5px] font-semibold uppercase tracking-[0.16em] px-4 py-2 border border-white/15 transition-colors"
+            >
+              {learnMoreLabel} <ArrowUpRight size={13} strokeWidth={2.4} />
+            </Link>
+          )}
         </div>
       </div>
     </article>

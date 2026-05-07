@@ -65,27 +65,31 @@ export function ProcessTimeline() {
               style={{ background: "linear-gradient(90deg, #FFB07A 0%, #FF7A45 100%)" }}
             />
           </div>
+          <div
+            className="md:hidden absolute left-[9px] top-2 bottom-2 w-px bg-white/12"
+            aria-hidden
+          />
 
-          <ol className="grid gap-10 sm:gap-8 md:gap-6 md:grid-cols-4">
+          <ol className="relative grid gap-8 sm:gap-9 md:gap-6 md:grid-cols-4">
             {STEPS.map((s, i) => (
               <motion.li
                 key={s.day}
                 initial={{ opacity: 0, y: 24 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6, delay: 0.15 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-                className="relative md:text-center"
+                className="relative pl-10 md:pl-0 md:text-center"
               >
                 {/* Dot */}
                 <span
                   aria-hidden
-                  className="block h-[18px] w-[18px] rounded-full mx-auto"
+                  className="absolute left-0 top-1 block h-[18px] w-[18px] rounded-full md:static md:mx-auto"
                   style={{
                     background: i === 0 ? "#FFB07A" : "#FF7A45",
                     boxShadow: "0 0 0 4px rgba(38,39,47,1), 0 0 0 5px rgba(255,122,69,0.4)",
                   }}
                 />
 
-                <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.20em] text-white/65">
+                <p className="text-[11px] font-bold uppercase tracking-[0.20em] text-white/65 md:mt-5">
                   {s.day}
                 </p>
                 <h3
@@ -99,7 +103,7 @@ export function ProcessTimeline() {
                 >
                   {s.title}
                 </h3>
-                <p className="mt-2.5 text-[14px] sm:text-[14.5px] text-white/70 leading-relaxed max-w-[28ch] mx-auto">
+                <p className="mt-2.5 text-[14px] sm:text-[14.5px] text-white/70 leading-relaxed max-w-[32ch] md:max-w-[28ch] md:mx-auto">
                   {s.body}
                 </p>
               </motion.li>

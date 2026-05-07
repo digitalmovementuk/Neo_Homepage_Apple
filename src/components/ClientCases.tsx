@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
-import { caseStudies } from "../content";
+import { caseStudies, caseStudiesDe } from "../content";
 import type { CaseStudy } from "../content";
 import { Reveal } from "../lib/Reveal";
 import { useT, useLang } from "../lib/i18n";
@@ -30,7 +30,7 @@ const BG_IMAGE =
 export function ClientCases() {
   const t = useT();
   const { lang } = useLang();
-  const isEN = lang === "en";
+  const studies = lang === "de" ? caseStudiesDe : caseStudies;
   const sectionRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
@@ -106,14 +106,20 @@ export function ClientCases() {
 
         {/* Editorial stack — desktop only */}
         <ul className="hidden md:block mt-12 sm:mt-16 md:mt-20 space-y-5 sm:space-y-6 md:space-y-7">
-          {caseStudies.map((cs, i) => (
-            <CaseRow key={cs.slug} study={cs} index={i} reverse={i % 2 === 1} />
+          {studies.map((cs, i) => (
+            <CaseRow
+              key={cs.slug}
+              study={cs}
+              index={i}
+              total={studies.length}
+              reverse={i % 2 === 1}
+            />
           ))}
         </ul>
       </div>
 
       {/* Mobile-only IG-story carousel */}
-      <MobileCaseStories />
+      <MobileCaseStories studies={studies} />
     </section>
   );
 }
@@ -124,7 +130,7 @@ export function ClientCases() {
 
 const STORY_DURATION_MS = 8000;
 
-function MobileCaseStories() {
+function MobileCaseStories({ studies }: { studies: CaseStudy[] }) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLElement | null)[]>([]);
@@ -159,11 +165,11 @@ function MobileCaseStories() {
       setProgress(p);
       if (p >= 1) {
         window.clearInterval(id);
-        setActiveIdx((i) => (i + 1) % caseStudies.length);
+        setActiveIdx((i) => (i + 1) % studies.length);
       }
     }, 50);
     return () => window.clearInterval(id);
-  }, [activeIdx, storiesVisible]);
+  }, [activeIdx, storiesVisible, studies.length]);
 
   // Sync scroll to activeIdx — uses clientWidth × idx so the math doesn't
   // depend on offsetLeft layout quirks. Sets a guard flag so the slide
@@ -226,7 +232,7 @@ function MobileCaseStories() {
   }, []);
 
   const next = () => {
-    setActiveIdx((i) => (i + 1) % caseStudies.length);
+    setActiveIdx((i) => (i + 1) % studies.length);
   };
 
   return (
@@ -236,7 +242,7 @@ function MobileCaseStories() {
         className="snap-x flex overflow-x-auto"
         style={{ scrollSnapType: "x mandatory" }}
       >
-        {caseStudies.map((cs, i) => (
+        {studies.map((cs, i) => (
           <CaseStorySlide
             key={cs.slug}
             ref={(el) => {
@@ -247,6 +253,7 @@ function MobileCaseStories() {
             }}
             study={cs}
             index={i}
+            total={studies.length}
             onTap={next}
           />
         ))}
@@ -255,7 +262,7 @@ function MobileCaseStories() {
       {/* Progress bars — IG style at the very top of the active story.
           Edge-to-edge slide, so just a small comfortable side inset. */}
       <div className="pointer-events-none absolute top-3 inset-x-4 flex gap-1.5 z-30">
-        {caseStudies.map((cs, i) => (
+        {studies.map((cs, i) => (
           <div
             key={cs.slug}
             className="flex-1 h-[3px] rounded-full bg-white/30 overflow-hidden"
@@ -284,12 +291,14 @@ const CaseStorySlide = ({
   videoRef,
   study,
   index,
+  total,
   onTap,
 }: {
   ref: (el: HTMLElement | null) => void;
   videoRef: (el: HTMLVideoElement | null) => void;
   study: CaseStudy;
   index: number;
+  total: number;
   onTap: () => void;
 }) => {
   return (
@@ -306,7 +315,7 @@ const CaseStorySlide = ({
         maxHeight: "100vh",
       }}
       aria-roledescription="slide"
-      aria-label={`${index + 1} of ${caseStudies.length}: ${study.client}`}
+      aria-label={`${index + 1} of ${total}: ${study.client}`}
     >
       <StoryVideo file={study.video} videoRef={videoRef} />
 
@@ -332,7 +341,7 @@ const CaseStorySlide = ({
 
       <div className="absolute top-10 inset-x-5 z-20 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.20em] text-white/85 pointer-events-none">
         <span className="tabular-nums">
-          {String(index + 1).padStart(2, "0")} / {String(caseStudies.length).padStart(2, "0")}
+          {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
         </span>
         <span className="h-px w-5 bg-white/40" />
         <span>{study.industry}</span>
@@ -444,10 +453,12 @@ function CaseVideo({ file, poster }: { file: string; poster?: string }) {
 function CaseRow({
   study,
   index,
+  total,
   reverse,
 }: {
   study: CaseStudy;
   index: number;
+  total: number;
   reverse: boolean;
 }) {
   return (
@@ -545,7 +556,7 @@ function CaseRow({
               Ergebnis
             </span>
             <span className="rounded-full bg-white/15 backdrop-blur-md text-white text-[10.5px] font-bold uppercase tracking-[0.18em] px-3 py-1.5 border border-white/20">
-              {String(index + 1).padStart(2, "0")} / {String(caseStudies.length).padStart(2, "0")}
+              {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
             </span>
           </div>
 

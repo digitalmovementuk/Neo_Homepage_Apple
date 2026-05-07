@@ -32,22 +32,39 @@ export function useLenis() {
       const anchor = target?.closest?.("a") as HTMLAnchorElement | null;
       if (!anchor) return;
       const href = anchor.getAttribute("href");
-      if (!href || !href.startsWith("#") || href === "#") return;
+      if (!href || href === "#") return;
       // Don't hijack if the anchor opens a new tab or has explicit modifier
       if (anchor.target === "_blank" || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      // Pure same-page anchor (#section) — Lenis handles smooth scroll.
+      // Cross-route anchors like "/#contact" must let the router navigate
+      // to "/" first; on the homepage the URL hash gets picked up below.
+      if (!href.startsWith("#")) return;
+
       const el = document.getElementById(href.slice(1));
       if (!el) return;
       e.preventDefault();
       lenis.scrollTo(el, { offset: -NAV_OFFSET, duration: 1.1 });
-      // Update history so the URL still reflects the section.
       if (history.replaceState) history.replaceState(null, "", href);
     };
     document.addEventListener("click", onAnchorClick);
+
+    // When the route changes and the URL has a hash, Lenis should still
+    // scroll to that anchor smoothly. Listen for hashchange (cross-route
+    // navigation to /#contact lands here once Layout's scrollTo fires).
+    const onHashChange = () => {
+      const hash = window.location.hash;
+      if (!hash || hash.length < 2) return;
+      const el = document.getElementById(hash.slice(1));
+      if (el) lenis.scrollTo(el, { offset: -NAV_OFFSET, duration: 1.1 });
+    };
+    window.addEventListener("hashchange", onHashChange);
 
     return () => {
       cancelAnimationFrame(raf);
       lenis.destroy();
       document.removeEventListener("click", onAnchorClick);
+      window.removeEventListener("hashchange", onHashChange);
     };
   }, []);
 }

@@ -35,6 +35,7 @@ export function Footer() {
   const isEN = lang === "en";
   return (
     <footer
+      id="footer"
       data-surface="light"
       className="bg-surface-2 text-ink pt-16 sm:pt-20 md:pt-24 pb-10"
     >

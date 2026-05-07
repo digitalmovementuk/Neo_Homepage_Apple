@@ -1,43 +1,29 @@
-import { useLenis } from "./lib/useLenis";
-import { Nav } from "./components/Nav";
-import { Hero } from "./components/Hero";
-import { AgencySnapshot } from "./components/AgencySnapshot";
-import { VideoTestimonials } from "./components/VideoTestimonials";
-import { WhyManifesto } from "./components/WhyManifesto";
-import { Principles } from "./components/Principles";
-import { ServicesCarousel } from "./components/ServicesCarousel";
-import { ClientCases } from "./components/ClientCases";
-import { Comparison } from "./components/Comparison";
-import { ProcessTimeline } from "./components/ProcessTimeline";
-import { Metrics } from "./components/Metrics";
-import { FounderNote } from "./components/FounderNote";
-import { Contact } from "./components/Contact";
-import { Footer } from "./components/Footer";
-import { StickyCTA } from "./components/StickyCTA";
-import { LeadCaptureModal } from "./components/LeadCaptureModal";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { HomePage } from "./pages/HomePage";
+import { ServiceSEO } from "./pages/services/seo";
+import { ServiceGoogleAds } from "./pages/services/google-ads";
+import { ServiceSocialMedia } from "./pages/services/social-media";
+import { ServiceWebsites } from "./pages/services/websites";
+import { NotFound } from "./pages/NotFound";
+
+const BASE = (import.meta.env.BASE_URL ?? "/").replace(/\/$/, "");
 
 export default function App() {
-  useLenis();
   return (
-    <>
-      <Nav />
-      <main id="main">
-        <Hero />
-        <AgencySnapshot />
-        <VideoTestimonials />
-        <WhyManifesto />
-        <Principles />
-        <ServicesCarousel />
-        <ClientCases />
-        <Comparison />
-        <ProcessTimeline />
-        <Metrics />
-        <FounderNote />
-        <Contact />
-      </main>
-      <Footer />
-      <StickyCTA />
-      <LeadCaptureModal />
-    </>
+    <BrowserRouter basename={BASE}>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="services">
+            <Route path="seo" element={<ServiceSEO />} />
+            <Route path="google-ads" element={<ServiceGoogleAds />} />
+            <Route path="social-media" element={<ServiceSocialMedia />} />
+            <Route path="websites" element={<ServiceWebsites />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }

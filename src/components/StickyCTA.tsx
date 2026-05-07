@@ -10,31 +10,31 @@ import { useT } from "../lib/i18n";
  * a plum-tinted ring pulse on both the bar and its inner CTA (synced 2.4s
  * beat). Only blends in once the user has scrolled the hero out of view —
  * the hero already has its own "Start" CTA, so showing this bar over the
- * hero would be redundant. Fades back out reversely when the user scrolls
- * up and the hero re-enters the viewport.
+ * hero would be redundant. It fades in after the Snapshot section and only
+ * fades out once the footer is fully visible.
  */
 export function StickyCTA() {
   const t = useT();
   const [show, setShow] = useState(false);
 
-  // The bar fades in once the Metrics ("The numbers") section is
-  // approaching, then fades back out as the Contact form approaches the
-  // viewport — at that point the form's own primary CTA takes over, so
-  // the sticky duplicate would be redundant. Reverses on scroll up.
+  // The bar appears after the long Snapshot section has fully passed. It
+  // stays available through the page and only disappears when the footer is
+  // fully visible, so it does not vanish over founder/contact content.
   useEffect(() => {
-    const metrics = document.getElementById("metrics");
-    const contact = document.getElementById("contact");
-    if (!metrics) return;
+    const snapshot = document.getElementById("snapshot");
+    const footer = document.querySelector("footer");
+    if (!snapshot || !footer) return;
     const onScroll = () => {
       const vh = window.innerHeight;
-      const metricsRect = metrics.getBoundingClientRect();
-      const pastMetricsThreshold = metricsRect.top < vh * 0.6;
-      // Hide while the contact form is approaching/visible (contact top
-      // has crossed the lower half of the viewport from the bottom).
-      const contactApproaching = contact
-        ? contact.getBoundingClientRect().top < vh * 0.65
-        : false;
-      setShow(pastMetricsThreshold && !contactApproaching);
+      const snapshotRect = snapshot.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      const navClearance = Math.min(96, vh * 0.14);
+      const afterSnapshot = snapshotRect.bottom <= navClearance;
+      const footerFullyVisible =
+        footerRect.top >= -1 && footerRect.bottom <= vh + 1;
+      const atDocumentBottom =
+        window.scrollY + vh >= document.documentElement.scrollHeight - 2;
+      setShow(afterSnapshot && !footerFullyVisible && !atDocumentBottom);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -57,7 +57,7 @@ export function StickyCTA() {
             : { opacity: 0, y: 24, pointerEvents: "none" }
         }
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="flex items-center justify-center gap-3 sm:gap-5 rounded-full bg-white/85 backdrop-blur-xl pl-5 sm:pl-7 pr-2 sm:pr-3 py-2 sm:py-3 border border-white/55 animate-pulse-bar"
+        className="flex w-full max-w-[min(640px,calc(100vw-32px))] items-center justify-center gap-3 sm:gap-5 rounded-full bg-white/85 backdrop-blur-xl pl-5 sm:pl-7 pr-2 sm:pr-3 py-2 sm:py-3 border border-white/55 animate-pulse-bar"
       >
         <p className="text-[13px] sm:text-[14.5px] font-semibold text-ink leading-tight whitespace-nowrap">
           {t.nav.cta}{" "}

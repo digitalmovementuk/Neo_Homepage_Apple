@@ -2,22 +2,46 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowRight, Check } from "lucide-react";
 import { useT, useLang } from "../lib/i18n";
+import { useLeadModal, type LeadModalContent } from "../lib/leadModal";
 
 /**
- * LeadCaptureModal — frozen-glass modal that pops in once per page load,
- * just before the Reviews section enters the viewport. Apple-style frosted
- * card with a blurred-page backdrop. Closeable via X, Esc, or backdrop tap.
+ * LeadCaptureModal — frozen-glass modal driven by `useLeadModal()`.
+ *
+ *   • Pages call `openWith({...})` to display custom service-specific copy
+ *     (e.g. "Free SEO Audit", "Free Ads Teardown").
+ *   • Falls back to homepage default copy from `t.modal.*` when no
+ *     content has been set (the auto-trigger on #reviews keeps working).
+ *
+ * Apple-style frosted card with a blurred-page backdrop. Closeable via X,
+ * Esc, or backdrop tap.
  */
 export function LeadCaptureModal() {
   const t = useT();
   const { lang } = useLang();
   const isEN = lang === "en";
-  const [open, setOpen] = useState(false);
+  const { open, content, setOpen, openWith } = useLeadModal();
   const [submitted, setSubmitted] = useState(false);
   const hasShownRef = useRef(false);
 
-  // Trigger — IntersectionObserver on #reviews with a positive bottom
-  // rootMargin so the modal pops BEFORE the section actually scrolls in.
+  // Default content from i18n — used by the auto-trigger when no service-
+  // page-specific payload is in flight.
+  const defaultContent: LeadModalContent = {
+    eyebrow: t.modal.eyebrow,
+    headline: t.modal.headline,
+    sub: t.modal.sub,
+    submit: t.modal.submit,
+    successHeadline: isEN
+      ? "Got it — we'll be in touch."
+      : "Erhalten — wir melden uns.",
+    successBody: isEN
+      ? "Your audit lands in your inbox within 24 working hours."
+      : "Ihr Audit landet werktags innerhalb 24 Stunden in Ihrem Posteingang.",
+  };
+
+  const c = content ?? defaultContent;
+
+  // Auto-trigger — IntersectionObserver on #reviews. Only fires on the
+  // homepage where #reviews is rendered.
   useEffect(() => {
     const reviews = document.getElementById("reviews");
     if (!reviews) return;
@@ -25,14 +49,15 @@ export function LeadCaptureModal() {
       ([entry]) => {
         if (entry.isIntersecting && !hasShownRef.current) {
           hasShownRef.current = true;
-          setOpen(true);
+          openWith(defaultContent);
         }
       },
-      { rootMargin: "0px 0px 240px 0px", threshold: 0 },
+      { rootMargin: "0px 0px 240px 0px", threshold: 0 }
     );
     obs.observe(reviews);
     return () => obs.disconnect();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
 
   // Body scroll lock + Esc-to-close while open.
   useEffect(() => {
@@ -47,6 +72,11 @@ export function LeadCaptureModal() {
       document.body.style.overflow = prev;
       document.removeEventListener("keydown", onKey);
     };
+  }, [open, setOpen]);
+
+  // Reset submitted state when modal opens fresh.
+  useEffect(() => {
+    if (open) setSubmitted(false);
   }, [open]);
 
   const onSubmit = (e: React.FormEvent) => {
@@ -59,7 +89,6 @@ export function LeadCaptureModal() {
     <AnimatePresence>
       {open && (
         <>
-          {/* Frosted backdrop — clicking it closes the modal */}
           <motion.div
             key="lcm-backdrop"
             initial={{ opacity: 0 }}
@@ -71,7 +100,6 @@ export function LeadCaptureModal() {
             aria-hidden
           />
 
-          {/* Centered modal panel */}
           <motion.div
             key="lcm-panel"
             initial={{ opacity: 0, y: 24, scale: 0.96 }}
@@ -96,7 +124,7 @@ export function LeadCaptureModal() {
               {!submitted ? (
                 <>
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink-muted">
-                    {t.modal.eyebrow}
+                    {c.eyebrow}
                   </p>
                   <h3
                     id="lcm-title"
@@ -108,10 +136,10 @@ export function LeadCaptureModal() {
                       fontWeight: 700,
                     }}
                   >
-                    {t.modal.headline}
+                    {c.headline}
                   </h3>
                   <p className="mt-2 text-[14.5px] text-ink-soft leading-relaxed">
-                    {t.modal.sub}
+                    {c.sub}
                   </p>
 
                   <form onSubmit={onSubmit} className="mt-5 space-y-3">
@@ -135,7 +163,7 @@ export function LeadCaptureModal() {
                       type="submit"
                       className="w-full mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-[#0071E3] hover:bg-[#0077ED] text-white font-semibold text-[15px] py-3 transition-colors"
                     >
-                      {t.modal.submit} <ArrowRight size={15} />
+                      {c.submit} <ArrowRight size={15} />
                     </button>
                     <p className="text-[11px] text-ink-muted text-center pt-1 leading-relaxed">
                       {isEN
@@ -150,14 +178,10 @@ export function LeadCaptureModal() {
                     <Check size={22} strokeWidth={3} />
                   </div>
                   <h3 className="mt-4 text-[20px] font-bold text-ink tracking-tight">
-                    {isEN
-                      ? "Got it — we'll be in touch."
-                      : "Erhalten — wir melden uns."}
+                    {c.successHeadline}
                   </h3>
                   <p className="mt-2 text-[14px] text-ink-soft leading-relaxed">
-                    {isEN
-                      ? "Your audit lands in your inbox within 24 working hours."
-                      : "Ihr Audit landet werktags innerhalb 24 Stunden in Ihrem Posteingang."}
+                    {c.successBody}
                   </p>
                 </div>
               )}

@@ -221,4 +221,14 @@
   transform: translateY(calc(-100% - 24px));
   transition: transform 0.2s ease;
 }
-.skip-link:focus { transform: translateY(0); }
+  .skip-link:focus { transform: translateY(0); }
+
+section[id] {
+  scroll-margin-top: 104px;
+}
+
+@media (max-width: 767px) {
+  section[id] {
+    scroll-margin-top: 76px;
+  }
+}

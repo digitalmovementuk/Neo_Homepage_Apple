@@ -62,7 +62,7 @@ export function Principles() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.7, delay: 0.05 * i, ease: [0.22, 1, 0.36, 1] }}
-              className="relative bg-white rounded-[28px] sm:rounded-[36px] border border-ink/8 overflow-hidden p-7 sm:p-9 md:p-10 flex flex-col"
+              className="relative bg-white rounded-[28px] sm:rounded-[36px] border border-ink/8 overflow-hidden p-7 sm:p-9 md:p-10 flex flex-col shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-soft"
             >
               <span
                 className="grid h-12 w-12 place-items-center rounded-full text-white shrink-0"

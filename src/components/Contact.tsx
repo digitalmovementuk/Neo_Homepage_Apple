@@ -77,7 +77,26 @@ export function Contact() {
         </div>
 
         {/* Right — form */}
-        <div className="rounded-[28px] sm:rounded-[36px] border border-ink/10 bg-white p-6 sm:p-8 md:p-10 shadow-card">
+        <div
+          id="contact-form"
+          className="relative z-[45] scroll-mt-20 md:scroll-mt-28 overflow-hidden rounded-[28px] sm:rounded-[36px] border border-[#0071E3]/25 bg-white shadow-[0_34px_90px_-42px_rgba(0,113,227,0.55),0_18px_46px_-30px_rgba(38,39,47,0.34)]"
+        >
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-1.5"
+            style={{
+              background:
+                "linear-gradient(90deg, #0071E3 0%, #FF7A45 55%, #EC178D 100%)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#0071E3]/[0.12] blur-3xl"
+          />
+          <div
+            aria-hidden
+            className="absolute -left-24 bottom-10 h-56 w-56 rounded-full bg-[#FF7A45]/10 blur-3xl"
+          />
           <AnimatePresence mode="wait">
             {!submitted ? (
               <motion.form
@@ -87,19 +106,48 @@ export function Contact() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.35 }}
-                className="space-y-5"
+                className="relative space-y-4 p-5 pt-6 sm:p-7 sm:pt-8 md:p-8 md:pt-9"
               >
-                <div className="flex items-center justify-between">
-                  <p className="eyebrow text-ink-muted">
-                    {isEN ? "Free consultation" : "Kostenloses Erstgespräch"}
-                  </p>
-                  <p className="text-[12px] text-ink-muted">
-                    {isEN ? "Reply within 24 h" : "Antwort innerhalb 24 h"}
-                  </p>
+                <div className="rounded-[22px] bg-ink p-4 sm:p-5 text-white shadow-[0_22px_48px_-30px_rgba(0,0,0,0.65)]">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">
+                        {isEN ? "Free consultation" : "Kostenloses Erstgespräch"}
+                      </p>
+                      <h3
+                        className="mt-1.5 max-w-[16ch] text-white"
+                        style={{
+                          fontSize: "clamp(23px, 2.6vw, 30px)",
+                          lineHeight: "1.04",
+                          letterSpacing: "-0.03em",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {isEN ? "Get a clear next step." : "Klarer nächster Schritt."}
+                      </h3>
+                    </div>
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-ink">
+                      <ArrowRight size={18} strokeWidth={2.4} />
+                    </span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-3 gap-1.5 sm:gap-2">
+                    {(isEN
+                      ? ["2 min", "24 h", "No pressure"]
+                      : ["2 Min.", "24 h", "Kein Druck"]
+                    ).map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-white/[0.12] bg-white/[0.08] px-2 py-1.5 text-center text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.10em] sm:tracking-[0.12em] text-white/[0.78]"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 <Field label={t.contact.form.name} name="name" required>
                   <input
+                    id="name"
                     type="text"
                     name="name"
                     required
@@ -107,9 +155,10 @@ export function Contact() {
                     className={inputCls}
                   />
                 </Field>
-                <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
                   <Field label={t.contact.form.email} name="email" required>
                     <input
+                      id="email"
                       type="email"
                       name="email"
                       required
@@ -122,6 +171,7 @@ export function Contact() {
                     name="phone"
                   >
                     <input
+                      id="phone"
                       type="tel"
                       name="phone"
                       autoComplete="tel"
@@ -134,6 +184,7 @@ export function Contact() {
                   name="service"
                 >
                   <select
+                    id="service"
                     name="service"
                     defaultValue={SERVICES[4]}
                     className={selectCls}
@@ -150,14 +201,15 @@ export function Contact() {
                   name="message"
                 >
                   <textarea
+                    id="message"
                     name="message"
-                    rows={4}
+                    rows={3}
                     placeholder={
                       isEN
                         ? "Where you are today, where you want to go, and what's in the way."
                         : "Wo Sie heute stehen, wo Sie hinwollen, und was im Weg steht."
                     }
-                    className={`${inputCls} resize-none min-h-[120px]`}
+                    className={`${inputCls} resize-none min-h-[76px] sm:min-h-[104px]`}
                   />
                 </Field>
 
@@ -175,16 +227,27 @@ export function Contact() {
 
                 <button
                   type="submit"
-                  className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium text-[15px] py-3 transition-colors"
+                  className="group w-full mt-1 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full bg-[#0071E3] hover:bg-[#0077ED] text-white font-semibold text-[15px] py-2.5 sm:py-3 transition-all duration-300 shadow-[0_18px_38px_-18px_rgba(0,113,227,0.85)] hover:-translate-y-0.5 hover:shadow-[0_24px_46px_-20px_rgba(0,113,227,0.95)]"
                 >
                   {isEN ? "Request consultation" : "Erstgespräch anfragen"}{" "}
-                  <ArrowRight size={15} />
+                  <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5" />
                 </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <p className="inline-flex items-center gap-2 rounded-2xl bg-[#0071E3]/[0.07] px-3 py-2 text-[11.5px] font-semibold text-ink-soft">
+                    <Check size={13} className="text-[#0071E3]" strokeWidth={2.6} />
+                    {isEN ? "Founder reply" : "Antwort vom Gründer"}
+                  </p>
+                  <p className="inline-flex items-center gap-2 rounded-2xl bg-[#FF7A45]/[0.10] px-3 py-2 text-[11.5px] font-semibold text-ink-soft">
+                    <Clock size={13} className="text-[#FF7A45]" strokeWidth={2.6} />
+                    {isEN ? "No jargon" : "Kein Fachchinesisch"}
+                  </p>
+                </div>
 
                 <p className="text-[11px] text-ink-muted leading-relaxed">
                   {isEN
-                    ? "No pressure, no jargon. By submitting you agree to be contacted about your enquiry."
-                    : "Kein Druck, kein Fachchinesisch. Mit Absenden stimmen Sie zu, zu Ihrer Anfrage kontaktiert zu werden."}
+                    ? "By submitting you agree to be contacted about your enquiry."
+                    : "Mit Absenden stimmen Sie zu, zu Ihrer Anfrage kontaktiert zu werden."}
                 </p>
               </motion.form>
             ) : (
@@ -194,7 +257,7 @@ export function Contact() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="text-center py-4"
+                className="relative text-center p-6 sm:p-8 md:p-10"
               >
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white">
                   <Check size={26} strokeWidth={3} />
@@ -267,9 +330,9 @@ export function Contact() {
 }
 
 const inputCls =
-  "w-full rounded-2xl border border-ink/15 bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink-faint outline-none transition focus:border-ink/55 focus:bg-white focus:ring-2 focus:ring-ink/10";
+  "w-full rounded-2xl border border-ink/[0.12] bg-[#F8FAFC] px-3.5 sm:px-4 py-2.5 sm:py-3.5 text-[15px] text-ink placeholder:text-ink-faint outline-none transition focus:border-[#0071E3]/[0.65] focus:bg-white focus:ring-4 focus:ring-[#0071E3]/[0.10]";
 
-const selectCls = `${inputCls} appearance-none pr-10`;
+const selectCls = `${inputCls} pr-10`;
 
 function Field({
   label,
@@ -284,7 +347,7 @@ function Field({
 }) {
   return (
     <label htmlFor={name} className="block">
-      <span className="block text-[11.5px] font-semibold uppercase tracking-[0.16em] text-ink-muted mb-1.5">
+      <span className="block text-[10.5px] sm:text-[11.5px] font-semibold uppercase tracking-[0.14em] sm:tracking-[0.16em] text-ink-muted mb-1.5">
         {label}
         {required && <span className="text-ink-faint ml-1">*</span>}
       </span>

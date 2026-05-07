@@ -52,7 +52,7 @@ export function Comparison() {
 
         <div className="mt-12 sm:mt-16 grid md:grid-cols-2 gap-4 sm:gap-5">
           {/* Andere Agenturen */}
-          <div className="rounded-[28px] sm:rounded-[36px] border border-ink/10 bg-white p-7 sm:p-9">
+          <div className="rounded-[28px] sm:rounded-[36px] border border-ink/10 bg-white p-7 sm:p-9 shadow-card">
             <p className="eyebrow text-ink-muted">{t.comparison.columns.other}</p>
             <ul className="mt-6 space-y-4">
               {ROWS.map((r) => (
